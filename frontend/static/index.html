@@ -5,577 +5,718 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DevSim - Simulador de señales de dispositivos</title>
     <link rel="stylesheet" href="styles.css">
-    
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔧 Device Simulator</h1>
-            <p>Gestión de Dispositivos y Conexiones Externas</p>
-            <nav class="main-nav">
-                <button id="nav-projects" class="nav-btn">📁 Proyectos</button>
-                <button id="nav-devices" class="nav-btn active">📱 Dispositivos</button>
-                <button id="nav-connections" class="nav-btn">🔗 Conexiones</button>            
-            </nav>
-        </header>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                Device Simulator
+            </div>
+            
+            <div class="nav-items">
+                <button id="nav-projects" class="nav-item">
+                    <span class="nav-icon">📁</span>
+                    Proyectos
+                </button>
+                <button id="nav-devices" class="nav-item active">
+                    <span class="nav-icon">📱</span>
+                    Dispositivos
+                </button>
+                <button id="nav-connections" class="nav-item">
+                    <span class="nav-icon">🔗</span>
+                    Conexiones
+                </button>
+            </div>
+        </nav>
 
-        <!-- Vista: Lista de Dispositivos -->
-        <div id="devices-list-view" class="view active">
-            <div class="view-header">
-                <h2>Dispositivos</h2>
-                <button id="btn-new-device" class="btn btn-primary">Nuevo Dispositivo</button>
-            </div>
-            
-            <div class="devices-grid" id="devices-grid">
-                <div class="loading" id="devices-loading">Cargando dispositivos...</div>
-            </div>
-        </div>
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-content">
+                    <h1 id="main-title">Dispositivos</h1>
+                    <p id="main-subtitle">Gestiona y configura tus dispositivos conectados</p>
+                </div>
+                <div class="header-actions">
+                    <select class="language-selector">
+                        <option>Español</option>
+                        <option>English</option>
+                        <option>Français</option>
+                    </select>
+                </div>
+            </header>
 
-        <!-- Vista: Crear Dispositivo -->
-        <div id="create-device-view" class="view">
-            <div class="view-header">
-                <h2>Crear Dispositivo</h2>
-                <button id="btn-back-to-list" class="btn btn-secondary">Volver</button>
-            </div>
-            
-            <form id="create-device-form" class="form">
-                <div class="form-group">
-                    <label for="device-name">Nombre *</label>
-                    <input type="text" id="device-name" name="name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="device-description">Descripción</label>
-                    <textarea id="device-description" name="description" rows="3"></textarea>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Crear Dispositivo</button>
-                    <button type="button" id="btn-cancel-create" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </div>
+            <!-- Vista: Lista de Dispositivos -->
+            <div id="devices-list-view" class="view active">
+                <div class="view-controls">
+                    <div class="controls-row">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" placeholder="Buscar dispositivos..." id="device-search-input">
+                        </div>
+                        
+                        <select class="filter-select" id="project-filter">
+                            <option value="">Todos los proyectos</option>
+                            <option value="alpha">Proyecto Alpha</option>
+                            <option value="beta">Proyecto Beta</option>
+                            <option value="gamma">Proyecto Gamma</option>
+                        </select>
 
-        <!-- Vista: Detalle Dispositivo -->
-        <div id="device-detail-view" class="view">
-            <div class="view-header">
-                <h2 id="device-detail-title">Dispositivo</h2>
-                <button id="btn-back-from-detail" class="btn btn-secondary">Volver</button>
-            </div>
-            
-            <div class="device-info" id="device-info">
-                <!-- Info del dispositivo se carga dinámicamente -->
-            </div>
-            
-            <!-- Upload CSV -->
-            <div class="upload-section">
-                <h3>Importar CSV</h3>
-                <div class="upload-area" id="upload-area">
-                    <div class="upload-content">
-                        <div class="upload-icon">📁</div>
-                        <p>Arrastra tu archivo CSV aquí o <span class="upload-link">selecciona un archivo</span></p>
-                        <input type="file" id="csv-file-input" accept=".csv" hidden>
+                        <select class="filter-select" id="status-filter">
+                            <option value="">Estado</option>
+                            <option value="transmitting">Transmitiendo</option>
+                            <option value="disconnected">Desconectado</option>
+                            <option value="configuring">Configurando</option>
+                        </select>
+
+                        <select class="filter-select" id="sort-by">
+                            <option value="name">Ordenar por nombre</option>
+                            <option value="id">Ordenar por ID</option>
+                            <option value="status">Ordenar por estado</option>
+                            <option value="lastTransmission">Última transmisión</option>
+                        </select>
+
+                        <div class="view-toggle">
+                            <button class="view-btn active" onclick="toggleView('grid')">⚏</button>
+                            <button class="view-btn" onclick="toggleView('list')">☰</button>
+                        </div>
+
+                        <button id="btn-new-device" class="btn-create">
+                            <span>+</span>
+                            Crear Nuevo Dispositivo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-state" id="devices-loading" style="display: none;">
+                    <div class="spinner"></div>
+                    Cargando dispositivos...
+                </div>
+                
+                <div class="devices-grid" id="devices-grid">
+                    <!-- Device cards will be populated by JavaScript -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <div class="pagination-info">
+                        Mostrando <span id="showing-range">1-12</span> de <span id="total-devices">48</span> dispositivos
+                    </div>
+                    
+                    <div class="pagination-controls">
+                        <button class="page-btn" id="prev-btn">‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <span class="page-btn">...</span>
+                        <button class="page-btn">12</button>
+                        <button class="page-btn" id="next-btn">›</button>
+                    </div>
+
+                    <div class="elements-per-page">
+                        <span>Elementos por página:</span>
+                        <select class="elements-select" id="elements-per-page">
+                            <option value="12" selected>12</option>
+                            <option value="24">24</option>
+                            <option value="48">48</option>
+                        </select>
                     </div>
                 </div>
             </div>
-            
-            <!-- Configuración de Transmisión -->
-            <div class="transmission-section" id="transmission-section">
-                <h3>📡 Configuración de Transmisión</h3>
+
+            <!-- Vista: Crear Dispositivo -->
+            <div id="create-device-view" class="view">
+                <div class="view-header">
+                    <h2>Crear Dispositivo</h2>
+                    <button id="btn-back-to-list" class="btn btn-secondary">Volver</button>
+                </div>
                 
-                <!-- Estado de Transmisión -->
-                <div class="transmission-status">
-                    <div class="status-indicator-container">
-                        <div id="transmission-state-indicator" class="transmission-indicator state-inactive"></div>
-                        <span id="transmission-state-text" class="state-text">Inactivo</span>
+                <form id="create-device-form" class="form">
+                    <div class="form-group">
+                        <label for="device-name">Nombre *</label>
+                        <input type="text" id="device-name" name="name" required>
                     </div>
-                    <div id="transmission-progress" class="transmission-progress" style="display: none;">
-                        <div id="sensor-progress-indicator"></div>
+                    
+                    <div class="form-group">
+                        <label for="device-description">Descripción</label>
+                        <textarea id="device-description" name="description" rows="3"></textarea>
                     </div>
-                    <div class="next-transmission" id="next-transmission-info" style="display: none;">
-                        <span>Próxima transmisión: <span id="next-transmission-time">--</span></span>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Crear Dispositivo</button>
+                        <button type="button" id="btn-cancel-create" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Vista: Detalle Dispositivo -->
+            <div id="device-detail-view" class="view">
+                <div class="view-header">
+                    <h2 id="device-detail-title">Dispositivo</h2>
+                    <button id="btn-back-from-detail" class="btn btn-secondary">Volver</button>
+                </div>
+                
+                <div class="device-info" id="device-info">
+                    <!-- Info del dispositivo se carga dinámicamente -->
+                </div>
+                
+                <!-- Upload CSV -->
+                <div class="upload-section">
+                    <h3>Importar CSV</h3>
+                    <div class="upload-area" id="upload-area">
+                        <div class="upload-content">
+                            <div class="upload-icon">📄</div>
+                            <p>Arrastra tu archivo CSV aquí o <span class="upload-link">selecciona un archivo</span></p>
+                            <input type="file" id="csv-file-input" accept=".csv" hidden>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="transmission-config">
-                    <div class="config-row">
+                <!-- Configuración de Transmisión -->
+                <div class="transmission-section" id="transmission-section">
+                    <h3>📡 Configuración de Transmisión</h3>
+                    
+                    <!-- Estado de Transmisión -->
+                    <div class="transmission-status">
+                        <div class="status-indicator-container">
+                            <div id="transmission-state-indicator" class="transmission-indicator state-inactive"></div>
+                            <span id="transmission-state-text" class="state-text">Inactivo</span>
+                        </div>
+                        <div id="transmission-progress" class="transmission-progress" style="display: none;">
+                            <div id="sensor-progress-indicator"></div>
+                        </div>
+                        <div class="next-transmission" id="next-transmission-info" style="display: none;">
+                            <span>Próxima transmisión: <span id="next-transmission-time">--</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="transmission-config">
+                        <div class="config-row">
+                            <div class="form-group">
+                                <label for="device-type">Tipo de Dispositivo</label>
+                                <select id="device-type" name="device_type">
+                                    <option value="WebApp">📱 WebApp (Envío completo)</option>
+                                    <option value="Sensor">🔬 Sensor (Fila por fila)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="transmission-frequency">Frecuencia (segundos)</label>
+                                <input type="number" id="transmission-frequency" name="transmission_frequency" min="1" value="3600">
+                            </div>
+                        </div>
+                        
+                        <div class="config-row">
+                            <div class="form-group">
+                                <label for="transmission-connection">Conexión para Transmisión</label>
+                                <select id="transmission-connection" name="transmission_connection">
+                                    <option value="">Seleccionar conexión...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="transmission-enabled" name="transmission_enabled">
+                                    <span class="checkmark"></span>
+                                    Transmisión automática habilitada
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="include-device-id" name="include_device_id_in_payload">
+                                    <span class="checkmark"></span>
+                                    Incluir device_id en payload
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="config-row" id="sensor-controls" style="display: none;">
+                            <div class="form-group">
+                                <label>Posición actual: <span id="current-row-index">0</span></label>
+                                <button id="btn-reset-sensor" class="btn btn-warning btn-sm">🔄 Reiniciar Posición</button>
+                            </div>
+                        </div>
+                        
+                        <div class="config-actions">
+                            <button id="btn-save-transmission-config" class="btn btn-primary">💾 Guardar Configuración</button>
+                            <button id="btn-transmit-now" class="btn btn-success">📤 Transmitir Ahora</button>
+                            <button id="btn-pause-transmission" class="btn btn-warning">⏸️ Pausar</button>
+                            <button id="btn-resume-transmission" class="btn btn-info">▶️ Reanudar</button>
+                            <button id="btn-stop-transmission" class="btn btn-danger">⏹️ Parar</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Historial de Transmisiones -->
+                    <div class="transmission-history">
+                        <div class="history-header">
+                            <h4>📋 Historial de Transmisiones</h4>
+                            <div class="history-controls">
+                                <select id="history-filter-status" class="filter-select">
+                                    <option value="">Todos los estados</option>
+                                    <option value="SUCCESS">Exitosas</option>
+                                    <option value="FAILED">Fallidas</option>
+                                </select>
+                                <select id="history-filter-connection" class="filter-select">
+                                    <option value="">Todas las conexiones</option>
+                                </select>
+                                <button class="btn btn-sm btn-secondary" onclick="exportTransmissionHistory()">📥 Exportar</button>
+                                <button class="btn btn-sm btn-primary" onclick="refreshTransmissionHistory()">🔄</button>
+                            </div>
+                        </div>
+                        <div id="transmission-history-list" class="history-list">
+                            <div class="loading">Sin transmisiones</div>
+                        </div>
+                        <div class="history-pagination" id="history-pagination" style="display: none;">
+                            <button class="btn btn-sm" onclick="loadHistoryPage('prev')">← Anterior</button>
+                            <span id="history-page-info">Página 1</span>
+                            <button class="btn btn-sm" onclick="loadHistoryPage('next')">Siguiente →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Previsualización -->
+                <div class="preview-section" id="preview-section" style="display: none;">
+                    <h3>Previsualización</h3>
+                    <div class="preview-container">
+                        <div class="preview-panel">
+                            <h4>Vista CSV</h4>
+                            <div class="table-container">
+                                <table id="csv-preview-table" class="preview-table">
+                                    <!-- Tabla CSV se genera dinámicamente -->
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-panel">
+                            <h4>Vista JSON</h4>
+                            <div class="json-container">
+                                <pre id="json-preview" class="json-preview">
+                                    <!-- JSON se genera dinámicamente -->
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-actions">
+                        <button id="btn-save-csv" class="btn btn-primary">Guardar Datos</button>
+                        <button id="btn-send-data" class="btn btn-success" style="display: none;">📤 Enviar a Conexión</button>
+                        <button id="btn-cancel-upload" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista: Lista de Conexiones -->
+            <div id="connections-list-view" class="view">
+                <div class="view-controls">
+                    <div class="controls-row">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" placeholder="Buscar conexiones..." id="connection-search-input">
+                        </div>
+                        
+                        <select class="filter-select" id="connection-type-filter">
+                            <option value="">Todos los tipos</option>
+                            <option value="MQTT">MQTT</option>
+                            <option value="HTTPS">HTTPS</option>
+                        </select>
+
+                        <select class="filter-select" id="connection-status-filter">
+                            <option value="">Estado</option>
+                            <option value="active">Activa</option>
+                            <option value="inactive">Inactiva</option>
+                        </select>
+
+                        <button id="btn-new-connection" class="btn-create">
+                            <span>+</span>
+                            Crear Nueva Conexión
+                        </button>
+                    </div>
+                </div>
+
+                <div class="loading-state" id="connections-loading" style="display: none;">
+                    <div class="spinner"></div>
+                    Cargando conexiones...
+                </div>
+                
+                <div class="connections-grid" id="connections-grid">
+                    <!-- Connection cards will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Vista: Crear/Editar Conexión -->
+            <div id="connection-form-view" class="view">
+                <div class="view-header">
+                    <h2 id="connection-form-title">Nueva Conexión</h2>
+                    <button id="btn-back-to-connections" class="btn btn-secondary">Volver</button>
+                </div>
+                
+                <form id="connection-form" class="form">
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="device-type">Tipo de Dispositivo</label>
-                            <select id="device-type" name="device_type">
-                                <option value="WebApp">📱 WebApp (Envío completo)</option>
-                                <option value="Sensor">🔬 Sensor (Fila por fila)</option>
-                            </select>
+                            <label for="connection-name">Nombre *</label>
+                            <input type="text" id="connection-name" name="name" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="transmission-frequency">Frecuencia (segundos)</label>
-                            <input type="number" id="transmission-frequency" name="transmission_frequency" min="1" value="3600">
-                        </div>
-                    </div>
-                    
-                    <div class="config-row">
-                        <div class="form-group">
-                            <label for="transmission-connection">Conexión para Transmisión</label>
-                            <select id="transmission-connection" name="transmission_connection">
-                                <option value="">Seleccionar conexión...</option>
+                            <label for="connection-type">Tipo de Conexión *</label>
+                            <select id="connection-type" name="type" required>
+                                <option value="">Seleccionar tipo...</option>
+                                <option value="MQTT">🔄 MQTT (Mosquitto)</option>
+                                <option value="HTTPS">🌐 HTTPS REST API</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="transmission-enabled" name="transmission_enabled">
-                                <span class="checkmark"></span>
-                                Transmisión automática habilitada
-                            </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="connection-description">Descripción</label>
+                        <textarea id="connection-description" name="description" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>🌐 Configuración de Servidor</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="connection-host">Host/Servidor *</label>
+                                <input type="text" id="connection-host" name="host" placeholder="ejemplo.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="connection-port">Puerto</label>
+                                <input type="number" id="connection-port" name="port" placeholder="1883">
+                            </div>
                         </div>
+                        
                         <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="include-device-id" name="include_device_id_in_payload">
-                                <span class="checkmark"></span>
-                                Incluir device_id en payload
-                            </label>
+                            <label for="connection-endpoint">Endpoint/Topic</label>
+                            <input type="text" id="connection-endpoint" name="endpoint" placeholder="/api/data o devices/topic">
+                            <small class="form-help">Para HTTPS: ruta del endpoint. Para MQTT: topic de destino</small>
                         </div>
                     </div>
                     
-                    <div class="config-row" id="sensor-controls" style="display: none;">
+                    <div class="form-section">
+                        <h3>🔐 Autenticación</h3>
                         <div class="form-group">
-                            <label>Posición actual: <span id="current-row-index">0</span></label>
-                            <button id="btn-reset-sensor" class="btn btn-warning btn-sm">🔄 Reiniciar Posición</button>
+                            <label for="auth-type">Tipo de Autenticación *</label>
+                            <select id="auth-type" name="auth_type" required>
+                                <option value="NONE">🔓 Sin Autenticación</option>
+                                <option value="USER_PASS">👤 Usuario y Contraseña</option>
+                                <option value="TOKEN">🎫 Token Bearer</option>
+                                <option value="API_KEY">🔑 API Key</option>
+                            </select>
                         </div>
+                        
+                        <!-- Campos de autenticación dinámicos -->
+                        <div id="auth-fields"></div>
                     </div>
                     
-                    <div class="config-actions">
-                        <button id="btn-save-transmission-config" class="btn btn-primary">💾 Guardar Configuración</button>
-                        <button id="btn-transmit-now" class="btn btn-success">📤 Transmitir Ahora</button>
-                        <button id="btn-pause-transmission" class="btn btn-warning">⏸️ Pausar</button>
-                        <button id="btn-resume-transmission" class="btn btn-info">▶️ Reanudar</button>
-                        <button id="btn-stop-transmission" class="btn btn-danger">⏹️ Parar</button>
+                    <!-- Configuración avanzada por tipo -->
+                    <div id="advanced-config" class="form-section" style="display: none;">
+                        <h3>⚙️ Configuración Avanzada</h3>
+                        <div id="advanced-fields"></div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span id="connection-submit-text">Crear Conexión</span>
+                        </button>
+                        <button type="button" id="btn-test-connection" class="btn btn-info" disabled>
+                            🧪 Probar Conexión
+                        </button>
+                        <button type="button" id="btn-cancel-connection" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Vista: Detalle de Conexión -->
+            <div id="connection-detail-view" class="view">
+                <div class="view-header">
+                    <h2 id="connection-detail-title">Detalle de Conexión</h2>
+                    <div class="header-actions">
+                        <button id="btn-edit-connection" class="btn btn-info">✏️ Editar</button>
+                        <button id="btn-test-connection-detail" class="btn btn-success">🧪 Probar</button>
+                        <button id="btn-back-from-connection-detail" class="btn btn-secondary">Volver</button>
                     </div>
                 </div>
                 
-                <!-- Historial de Transmisiones -->
-                <div class="transmission-history">
+                <div class="connection-info" id="connection-info">
+                    <!-- Info de la conexión se carga dinámicamente -->
+                </div>
+                
+                <div class="connection-history">
+                    <h3>📊 Historial de Pruebas</h3>
+                    <div class="history-list" id="connection-history-list">
+                        <div class="loading">Cargando historial...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista: Lista de Proyectos -->
+            <div id="projects-list-view" class="view">
+                <div class="view-controls">
+                    <div class="controls-row">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" class="search-input" placeholder="Buscar proyectos..." id="project-search-input">
+                        </div>
+                        
+                        <select class="filter-select" id="project-status-filter">
+                            <option value="">Estado</option>
+                            <option value="active">Activo</option>
+                            <option value="inactive">Inactivo</option>
+                        </select>
+
+                        <button id="btn-new-project" class="btn-create">
+                            <span>+</span>
+                            Nuevo Proyecto
+                        </button>
+                    </div>
+                </div>
+
+                <div class="loading-state" id="projects-loading" style="display: none;">
+                    <div class="spinner"></div>
+                    Cargando proyectos...
+                </div>
+                
+                <div class="projects-grid" id="projects-grid">
+                    <!-- Project cards will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Vista: Crear/Editar Proyecto -->
+            <div id="project-form-view" class="view">
+                <div class="view-header">
+                    <h2 id="project-form-title">Nuevo Proyecto</h2>
+                    <button id="btn-back-to-projects" class="btn btn-secondary">Volver</button>
+                </div>
+                
+                <form id="project-form" class="form">
+                    <div class="form-group">
+                        <label for="project-name">Nombre del Proyecto *</label>
+                        <input type="text" id="project-name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project-description">Descripción</label>
+                        <textarea id="project-description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span id="project-submit-text">Crear Proyecto</span>
+                        </button>
+                        <button type="button" id="btn-cancel-project" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Vista: Detalle de Proyecto -->
+            <div id="project-detail-view" class="view">
+                <div class="view-header">
+                    <h2 id="project-detail-title">Detalle de Proyecto</h2>
+                    <div class="header-actions">
+                        <button id="btn-edit-project" class="btn btn-info">✏️ Editar</button>
+                        <button id="btn-delete-project" class="btn btn-danger">🗑️ Eliminar</button>
+                        <button id="btn-back-from-project-detail" class="btn btn-secondary">Volver</button>
+                    </div>
+                </div>
+                
+                <div class="project-info" id="project-info">
+                    <!-- Info del proyecto se carga dinámicamente -->
+                </div>
+
+                <!-- Control de Transmisiones Masivas -->
+                <div class="project-transmission-control">
+                    <h3>📡 Control de Transmisiones</h3>
+                    
+                    <div class="transmission-status">
+                        <div class="status-indicator-container">
+                            <div id="project-transmission-indicator" class="transmission-indicator state-inactive"></div>
+                            <span id="project-transmission-text" class="state-text">Inactivo</span>
+                        </div>
+                    </div>
+                    
+                    <div class="transmission-config">
+                        <div class="form-group">
+                            <label for="project-connection-selector">Conexión para Transmisión</label>
+                            <select id="project-connection-selector" name="connection_id">
+                                <option value="">Usar conexión de cada dispositivo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="transmission-actions">
+                            <button id="btn-start-project-transmission" class="btn btn-success">🚀 Iniciar Transmisiones</button>
+                            <button id="btn-pause-project-transmission" class="btn btn-warning">⏸️ Pausar</button>
+                            <button id="btn-resume-project-transmission" class="btn btn-info">▶️ Reanudar</button>
+                            <button id="btn-stop-project-transmission" class="btn btn-danger">⏹️ Parar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestión de Dispositivos del Proyecto -->
+                <div class="project-devices">
+                    <div class="devices-header">
+                        <h3>📱 Dispositivos del Proyecto</h3>
+                        <button id="btn-add-devices-to-project" class="btn btn-primary">➕ Agregar Dispositivos</button>
+                    </div>
+                    
+                    <div class="project-devices-list" id="project-devices-list">
+                        <div class="loading">Cargando dispositivos...</div>
+                    </div>
+                </div>
+
+                <!-- Historial de Transmisiones del Proyecto -->
+                <div class="project-transmission-history">
                     <div class="history-header">
-                        <h4>📋 Historial de Transmisiones</h4>
+                        <h3>📋 Historial de Transmisiones</h3>
                         <div class="history-controls">
-                            <select id="history-filter-status" class="filter-select">
+                            <select id="project-history-filter-device" class="filter-select">
+                                <option value="">Todos los dispositivos</option>
+                            </select>
+                            <select id="project-history-filter-status" class="filter-select">
                                 <option value="">Todos los estados</option>
                                 <option value="SUCCESS">Exitosas</option>
                                 <option value="FAILED">Fallidas</option>
                             </select>
-                            <select id="history-filter-connection" class="filter-select">
-                                <option value="">Todas las conexiones</option>
-                            </select>
-                            <button class="btn btn-sm btn-secondary" onclick="exportTransmissionHistory()">📥 Exportar</button>
-                            <button class="btn btn-sm btn-primary" onclick="refreshTransmissionHistory()">🔄</button>
+                            <button class="btn btn-sm btn-secondary" onclick="exportProjectTransmissionHistory()">📥 Exportar</button>
+                            <button class="btn btn-sm btn-primary" onclick="refreshProjectTransmissionHistory()">🔄</button>
                         </div>
                     </div>
-                    <div id="transmission-history-list" class="history-list">
+                    <div id="project-transmission-history-list" class="history-list">
                         <div class="loading">Sin transmisiones</div>
                     </div>
-                    <div class="history-pagination" id="history-pagination" style="display: none;">
-                        <button class="btn btn-sm" onclick="loadHistoryPage('prev')">← Anterior</button>
-                        <span id="history-page-info">Página 1</span>
-                        <button class="btn btn-sm" onclick="loadHistoryPage('next')">Siguiente →</button>
-                    </div>
                 </div>
             </div>
 
-            <!-- Previsualización -->
-            <div class="preview-section" id="preview-section" style="display: none;">
-                <h3>Previsualización</h3>
-                <div class="preview-container">
-                    <div class="preview-panel">
-                        <h4>Vista CSV</h4>
-                        <div class="table-container">
-                            <table id="csv-preview-table" class="preview-table">
-                                <!-- Tabla CSV se genera dinámicamente -->
-                            </table>
+            <!-- Modal de Envío de Datos -->
+            <div id="send-data-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>📤 Enviar Datos del Dispositivo</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Selecciona una conexión para enviar los datos:</p>
+                        <div class="connections-selector" id="connections-selector">
+                            <!-- Lista de conexiones activas -->
+                        </div>
+                        <div class="data-preview">
+                            <h4>Vista previa de los datos:</h4>
+                            <pre id="send-data-preview"></pre>
                         </div>
                     </div>
-                    
-                    <div class="preview-panel">
-                        <h4>Vista JSON</h4>
-                        <div class="json-container">
-                            <pre id="json-preview" class="json-preview">
-                                <!-- JSON se genera dinámicamente -->
-                            </pre>
+                    <div class="modal-footer">
+                        <button id="btn-confirm-send" class="btn btn-primary">Enviar</button>
+                        <button id="btn-cancel-send" class="btn btn-secondary">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Transmisión Manual -->
+            <div id="transmit-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>📡 Transmisión Manual</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Selecciona una conexión para la transmisión:</p>
+                        <div class="connections-selector" id="transmit-connections-selector">
+                            <!-- Lista de conexiones activas -->
                         </div>
                     </div>
-                </div>
-                
-                <div class="preview-actions">
-                    <button id="btn-save-csv" class="btn btn-primary">Guardar Datos</button>
-                    <button id="btn-send-data" class="btn btn-success" style="display: none;">📤 Enviar a Conexión</button>
-                    <button id="btn-cancel-upload" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vista: Lista de Conexiones -->
-        <div id="connections-list-view" class="view">
-            <div class="view-header">
-                <h2>🔗 Conexiones Externas</h2>
-                <button id="btn-new-connection" class="btn btn-primary">Nueva Conexión</button>
-            </div>
-            
-            <div class="connections-grid" id="connections-grid">
-                <div class="loading" id="connections-loading">Cargando conexiones...</div>
-            </div>
-        </div>
-
-        <!-- Vista: Crear/Editar Conexión -->
-        <div id="connection-form-view" class="view">
-            <div class="view-header">
-                <h2 id="connection-form-title">Nueva Conexión</h2>
-                <button id="btn-back-to-connections" class="btn btn-secondary">Volver</button>
-            </div>
-            
-            <form id="connection-form" class="form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="connection-name">Nombre *</label>
-                        <input type="text" id="connection-name" name="name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="connection-type">Tipo de Conexión *</label>
-                        <select id="connection-type" name="type" required>
-                            <option value="">Seleccionar tipo...</option>
-                            <option value="MQTT">🔄 MQTT (Mosquitto)</option>
-                            <option value="HTTPS">🌐 HTTPS REST API</option>
-                        </select>
+                    <div class="modal-footer">
+                        <button id="btn-confirm-transmit" class="btn btn-primary">Transmitir</button>
+                        <button id="btn-cancel-transmit" class="btn btn-secondary">Cancelar</button>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label for="connection-description">Descripción</label>
-                    <textarea id="connection-description" name="description" rows="2"></textarea>
+            </div>
+
+            <!-- Modal de Selección de Dispositivos para Proyecto -->
+            <div id="add-devices-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>➕ Agregar Dispositivos al Proyecto</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Selecciona los dispositivos que deseas agregar al proyecto:</p>
+                        <div class="devices-selector" id="unassigned-devices-selector">
+                            <!-- Lista de dispositivos sin asignar -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="btn-confirm-add-devices" class="btn btn-primary">Agregar Seleccionados</button>
+                        <button id="btn-cancel-add-devices" class="btn btn-secondary">Cancelar</button>
+                    </div>
                 </div>
-                
-                <div class="form-section">
-                    <h3>🌐 Configuración de Servidor</h3>
-                    <div class="form-row">
+            </div>
+
+            <!-- Modal de Duplicación de Dispositivos -->
+            <div id="duplicate-device-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>🔄 Duplicar Dispositivo</h3>
+                        <button class="modal-close" onclick="hideDuplicateModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Cuántas copias deseas crear de "<span id="device-name-to-duplicate"></span>"?</p>
                         <div class="form-group">
-                            <label for="connection-host">Host/Servidor *</label>
-                            <input type="text" id="connection-host" name="host" placeholder="ejemplo.com" required>
+                            <label for="duplicate-count">Número de duplicados:</label>
+                            <input type="number" id="duplicate-count" min="1" max="50" value="1">
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="connection-port">Puerto</label>
-                            <input type="number" id="connection-port" name="port" placeholder="1883">
+                        <div class="duplicate-preview">
+                            <h4>Vista previa de nombres:</h4>
+                            <ul id="duplicate-names-preview"></ul>
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="connection-endpoint">Endpoint/Topic</label>
-                        <input type="text" id="connection-endpoint" name="endpoint" placeholder="/api/data o devices/topic">
-                        <small class="form-help">Para HTTPS: ruta del endpoint. Para MQTT: topic de destino</small>
-                    </div>
-                </div>
-                
-                <div class="form-section">
-                    <h3>🔐 Autenticación</h3>
-                    <div class="form-group">
-                        <label for="auth-type">Tipo de Autenticación *</label>
-                        <select id="auth-type" name="auth_type" required>
-                            <option value="NONE">🔓 Sin Autenticación</option>
-                            <option value="USER_PASS">👤 Usuario y Contraseña</option>
-                            <option value="TOKEN">🎫 Token Bearer</option>
-                            <option value="API_KEY">🔑 API Key</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Campos de autenticación dinámicos -->
-                    <div id="auth-fields"></div>
-                </div>
-                
-                <!-- Configuración avanzada por tipo -->
-                <div id="advanced-config" class="form-section" style="display: none;">
-                    <h3>⚙️ Configuración Avanzada</h3>
-                    <div id="advanced-fields"></div>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <span id="connection-submit-text">Crear Conexión</span>
-                    </button>
-                    <button type="button" id="btn-test-connection" class="btn btn-info" disabled>
-                        🧪 Probar Conexión
-                    </button>
-                    <button type="button" id="btn-cancel-connection" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Vista: Detalle de Conexión -->
-        <div id="connection-detail-view" class="view">
-            <div class="view-header">
-                <h2 id="connection-detail-title">Detalle de Conexión</h2>
-                <div class="header-actions">
-                    <button id="btn-edit-connection" class="btn btn-info">✏️ Editar</button>
-                    <button id="btn-test-connection-detail" class="btn btn-success">🧪 Probar</button>
-                    <button id="btn-back-from-connection-detail" class="btn btn-secondary">Volver</button>
-                </div>
-            </div>
-            
-            <div class="connection-info" id="connection-info">
-                <!-- Info de la conexión se carga dinámicamente -->
-            </div>
-            
-            <div class="connection-history">
-                <h3>📊 Historial de Pruebas</h3>
-                <div class="history-list" id="connection-history-list">
-                    <div class="loading">Cargando historial...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vista: Lista de Proyectos -->
-        <div id="projects-list-view" class="view">
-            <div class="view-header">
-                <h2>📁 Proyectos</h2>
-                <button id="btn-new-project" class="btn btn-primary">Nuevo Proyecto</button>
-            </div>
-            
-            <div class="projects-grid" id="projects-grid">
-                <div class="loading" id="projects-loading">Cargando proyectos...</div>
-            </div>
-        </div>
-
-        <!-- Vista: Crear/Editar Proyecto -->
-        <div id="project-form-view" class="view">
-            <div class="view-header">
-                <h2 id="project-form-title">Nuevo Proyecto</h2>
-                <button id="btn-back-to-projects" class="btn btn-secondary">Volver</button>
-            </div>
-            
-            <form id="project-form" class="form">
-                <div class="form-group">
-                    <label for="project-name">Nombre del Proyecto *</label>
-                    <input type="text" id="project-name" name="name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="project-description">Descripción</label>
-                    <textarea id="project-description" name="description" rows="3"></textarea>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <span id="project-submit-text">Crear Proyecto</span>
-                    </button>
-                    <button type="button" id="btn-cancel-project" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Vista: Detalle de Proyecto -->
-        <div id="project-detail-view" class="view">
-            <div class="view-header">
-                <h2 id="project-detail-title">Detalle de Proyecto</h2>
-                <div class="header-actions">
-                    <button id="btn-edit-project" class="btn btn-info">✏️ Editar</button>
-                    <button id="btn-delete-project" class="btn btn-danger">🗑️ Eliminar</button>
-                    <button id="btn-back-from-project-detail" class="btn btn-secondary">Volver</button>
-                </div>
-            </div>
-            
-            <div class="project-info" id="project-info">
-                <!-- Info del proyecto se carga dinámicamente -->
-            </div>
-
-            <!-- Control de Transmisiones Masivas -->
-            <div class="project-transmission-control">
-                <h3>📡 Control de Transmisiones</h3>
-                
-                <div class="transmission-status">
-                    <div class="status-indicator-container">
-                        <div id="project-transmission-indicator" class="transmission-indicator state-inactive"></div>
-                        <span id="project-transmission-text" class="state-text">Inactivo</span>
-                    </div>
-                </div>
-                
-                <div class="transmission-config">
-                    <div class="form-group">
-                        <label for="project-connection-selector">Conexión para Transmisión</label>
-                        <select id="project-connection-selector" name="connection_id">
-                            <option value="">Usar conexión de cada dispositivo</option>
-                        </select>
-                    </div>
-                    
-                    <div class="transmission-actions">
-                        <button id="btn-start-project-transmission" class="btn btn-success">🚀 Iniciar Transmisiones</button>
-                        <button id="btn-pause-project-transmission" class="btn btn-warning">⏸️ Pausar</button>
-                        <button id="btn-resume-project-transmission" class="btn btn-info">▶️ Reanudar</button>
-                        <button id="btn-stop-project-transmission" class="btn btn-danger">⏹️ Parar</button>
+                    <div class="modal-footer">
+                        <button id="btn-confirm-duplicate" class="btn btn-primary">Duplicar</button>
+                        <button id="btn-cancel-duplicate" class="btn btn-secondary" onclick="hideDuplicateModal()">Cancelar</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Gestión de Dispositivos del Proyecto -->
-            <div class="project-devices">
-                <div class="devices-header">
-                    <h3>📱 Dispositivos del Proyecto</h3>
-                    <button id="btn-add-devices-to-project" class="btn btn-primary">➕ Agregar Dispositivos</button>
-                </div>
-                
-                <div class="project-devices-list" id="project-devices-list">
-                    <div class="loading">Cargando dispositivos...</div>
+            <!-- Modal de Eliminación de Dispositivos -->
+            <div id="delete-device-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>🗑️ Eliminar Dispositivo</h3>
+                        <button class="modal-close" onclick="hideDeleteModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Vas a eliminar el dispositivo "<span id="device-name-to-delete"></span>".</p>
+                        <p><strong>Esta acción es permanente y no se podrá recuperar.</strong> ¿Deseas continuar?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="btn-confirm-delete" class="btn btn-danger">Eliminar</button>
+                        <button id="btn-cancel-delete" class="btn btn-secondary" onclick="hideDeleteModal()">Cancelar</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Historial de Transmisiones del Proyecto -->
-            <div class="project-transmission-history">
-                <div class="history-header">
-                    <h3>📋 Historial de Transmisiones</h3>
-                    <div class="history-controls">
-                        <select id="project-history-filter-device" class="filter-select">
-                            <option value="">Todos los dispositivos</option>
-                        </select>
-                        <select id="project-history-filter-status" class="filter-select">
-                            <option value="">Todos los estados</option>
-                            <option value="SUCCESS">Exitosas</option>
-                            <option value="FAILED">Fallidas</option>
-                        </select>
-                        <button class="btn btn-sm btn-secondary" onclick="exportProjectTransmissionHistory()">📥 Exportar</button>
-                        <button class="btn btn-sm btn-primary" onclick="refreshProjectTransmissionHistory()">🔄</button>
+            <!-- Modal de Resultados de Operaciones -->
+            <div id="operation-results-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="operation-title">Resultado de Operación</h3>
+                        <button class="modal-close">&times;</button>
                     </div>
-                </div>
-                <div id="project-transmission-history-list" class="history-list">
-                    <div class="loading">Sin transmisiones</div>
+                    <div class="modal-body">
+                        <div class="operation-summary">
+                            <!-- Resumen de la operación -->
+                        </div>
+                        <div class="operation-details">
+                            <!-- Detalles por dispositivo -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="hideOperationResultsModal()">Cerrar</button>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Modal de Envío de Datos -->
-        <div id="send-data-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>📤 Enviar Datos del Dispositivo</h3>
-                    <button class="modal-close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Selecciona una conexión para enviar los datos:</p>
-                    <div class="connections-selector" id="connections-selector">
-                        <!-- Lista de conexiones activas -->
-                    </div>
-                    <div class="data-preview">
-                        <h4>Vista previa de los datos:</h4>
-                        <pre id="send-data-preview"></pre>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-confirm-send" class="btn btn-primary">Enviar</button>
-                    <button id="btn-cancel-send" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Transmisión Manual -->
-        <div id="transmit-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>📡 Transmisión Manual</h3>
-                    <button class="modal-close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Selecciona una conexión para la transmisión:</p>
-                    <div class="connections-selector" id="transmit-connections-selector">
-                        <!-- Lista de conexiones activas -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-confirm-transmit" class="btn btn-primary">Transmitir</button>
-                    <button id="btn-cancel-transmit" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Selección de Dispositivos para Proyecto -->
-        <div id="add-devices-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>➕ Agregar Dispositivos al Proyecto</h3>
-                    <button class="modal-close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Selecciona los dispositivos que deseas agregar al proyecto:</p>
-                    <div class="devices-selector" id="unassigned-devices-selector">
-                        <!-- Lista de dispositivos sin asignar -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-confirm-add-devices" class="btn btn-primary">Agregar Seleccionados</button>
-                    <button id="btn-cancel-add-devices" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Duplicación de Dispositivos -->
-        <div id="duplicate-device-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>🔄 Duplicar Dispositivo</h3>
-                    <button class="modal-close" onclick="hideDuplicateModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>¿Cuántas copias deseas crear de "<span id="device-name-to-duplicate"></span>"?</p>
-                    <div class="form-group">
-                        <label for="duplicate-count">Número de duplicados:</label>
-                        <input type="number" id="duplicate-count" min="1" max="50" value="1">
-                    </div>
-                    <div class="duplicate-preview">
-                        <h4>Vista previa de nombres:</h4>
-                        <ul id="duplicate-names-preview"></ul>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-confirm-duplicate" class="btn btn-primary">Duplicar</button>
-                    <button id="btn-cancel-duplicate" class="btn btn-secondary" onclick="hideDuplicateModal()">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Eliminación de Dispositivos -->
-        <div id="delete-device-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>🗑️ Eliminar Dispositivo</h3>
-                    <button class="modal-close" onclick="hideDeleteModal()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Vas a eliminar el dispositivo "<span id="device-name-to-delete"></span>".</p>
-                    <p><strong>Esta acción es permanente y no se podrá recuperar.</strong> ¿Deseas continuar?</p>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-confirm-delete" class="btn btn-danger">Eliminar</button>
-                    <button id="btn-cancel-delete" class="btn btn-secondary" onclick="hideDeleteModal()">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal de Resultados de Operaciones -->
-        <div id="operation-results-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="operation-title">Resultado de Operación</h3>
-                    <button class="modal-close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="operation-summary">
-                        <!-- Resumen de la operación -->
-                    </div>
-                    <div class="operation-details">
-                        <!-- Detalles por dispositivo -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-primary" onclick="hideOperationResultsModal()">Cerrar</button>
-                </div>
-            </div>
-        </div>
-
-        
+        </main>
     </div>
 
     <!-- Notificaciones -->
