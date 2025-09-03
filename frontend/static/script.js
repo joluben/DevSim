@@ -205,6 +205,16 @@ class DeviceSimulatorApp {
         
         // Form submissions
         this.setupForms();
+        
+        // Connection detail edit button
+        const btnEditConnection = document.getElementById('btn-edit-connection');
+        if (btnEditConnection) {
+            btnEditConnection.addEventListener('click', () => {
+                if (this.currentConnection) {
+                    this.editConnection(this.currentConnection.id);
+                }
+            });
+        }
     }
     
     setupSearchAndFilters() {
@@ -528,8 +538,27 @@ class DeviceSimulatorApp {
     
     // Connection operations
     showCreateConnectionForm() {
+        this.currentConnection = null;
+        this.showConnectionForm(false); // false indica modo creación
+    }
+    
+    showConnectionForm(isEdit = false) {
         this.hideAllViews();
         document.getElementById('connection-form-view').classList.add('active');
+        
+        // Actualizar título y botón según el modo
+        const title = document.getElementById('connection-form-title');
+        const submitText = document.getElementById('connection-submit-text');
+        
+        if (isEdit && this.currentConnection) {
+            title.textContent = 'Editar Conexión';
+            submitText.textContent = 'Actualizar Conexión';
+            this.populateConnectionForm(this.currentConnection);
+        } else {
+            title.textContent = 'Nueva Conexión';
+            submitText.textContent = 'Crear Conexión';
+            this.clearConnectionForm();
+        }
     }
     
     viewConnection(connectionId) {
@@ -540,10 +569,18 @@ class DeviceSimulatorApp {
         this.hideAllViews();
         document.getElementById('connection-detail-view').classList.add('active');
         document.getElementById('connection-detail-title').textContent = connection.name;
+        this.populateConnectionInfo(connection);
     }
     
     editConnection(connectionId) {
-        this.showNotification('Función de edición en desarrollo', 'info');
+        const connection = this.connections.find(c => c.id === connectionId);
+        if (!connection) {
+            this.showNotification('Conexión no encontrada', 'error');
+            return;
+        }
+        
+        this.currentConnection = connection;
+        this.showConnectionForm(true); // true indica modo edición
     }
     
     testConnection(connectionId) {
@@ -565,6 +602,16 @@ class DeviceSimulatorApp {
         const form = document.getElementById('connection-form');
         const formData = new FormData(form);
         
+        if (this.currentConnection) {
+            // Modo edición
+            this.updateConnection(formData);
+        } else {
+            // Modo creación
+            this.createConnection(formData);
+        }
+    }
+    
+    createConnection(formData) {
         const newConnection = {
             id: `CONN-${String(this.connections.length + 1).padStart(3, '0')}`,
             name: formData.get('name'),
@@ -580,7 +627,94 @@ class DeviceSimulatorApp {
         this.connections.push(newConnection);
         this.showNotification('Conexión creada correctamente', 'success');
         this.showView('connections');
-        form.reset();
+        document.getElementById('connection-form').reset();
+    }
+    
+    updateConnection(formData) {
+        const connectionIndex = this.connections.findIndex(c => c.id === this.currentConnection.id);
+        if (connectionIndex === -1) {
+            this.showNotification('Error: Conexión no encontrada', 'error');
+            return;
+        }
+        
+        // Actualizar la conexión existente
+        this.connections[connectionIndex] = {
+            ...this.connections[connectionIndex],
+            name: formData.get('name'),
+            type: formData.get('type'),
+            host: formData.get('host'),
+            port: formData.get('port') || (formData.get('type') === 'MQTT' ? 1883 : 443),
+            endpoint: formData.get('endpoint') || '',
+            description: formData.get('description') || '',
+            lastTest: new Date().toLocaleString()
+        };
+        
+        this.showNotification('Conexión actualizada correctamente', 'success');
+        this.showView('connections');
+        this.currentConnection = null;
+    }
+    
+    populateConnectionForm(connection) {
+        document.getElementById('connection-name').value = connection.name || '';
+        document.getElementById('connection-type').value = connection.type || '';
+        document.getElementById('connection-description').value = connection.description || '';
+        document.getElementById('connection-host').value = connection.host || '';
+        document.getElementById('connection-port').value = connection.port || '';
+        document.getElementById('connection-endpoint').value = connection.endpoint || '';
+        
+        // Si hay configuración de autenticación, también poblarla
+        // (esto se puede expandir según las necesidades)
+    }
+    
+    clearConnectionForm() {
+        document.getElementById('connection-form').reset();
+    }
+    
+    populateConnectionInfo(connection) {
+        const infoContainer = document.getElementById('connection-info');
+        if (!infoContainer) return;
+        
+        infoContainer.innerHTML = `
+            <div class="info-row">
+                <span class="info-label">Nombre:</span>
+                <span class="info-value">${connection.name}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">ID:</span>
+                <span class="info-value">${connection.id}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tipo:</span>
+                <span class="info-value">${connection.type}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Host:</span>
+                <span class="info-value">${connection.host}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Puerto:</span>
+                <span class="info-value">${connection.port}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Endpoint:</span>
+                <span class="info-value">${connection.endpoint || 'No especificado'}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Estado:</span>
+                <span class="info-value">
+                    <span class="status-dot ${connection.status}"></span>
+                    ${connection.status === 'active' ? 'Activa' : 'Inactiva'}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Descripción:</span>
+                <span class="info-value">${connection.description || 'Sin descripción'}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Última prueba:</span>
+                <span class="info-value">${connection.lastTest || 'Nunca'}</span>
+            </div>
+        `;
     }
     
     // Project operations
